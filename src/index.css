@@ -1,0 +1,46 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-dust-blue: #60607A;
+    --color-moss-green: #839958;
+    --color-burnt-orange: #D57B03;
+    --color-soft-cream: #F4E2D0;
+    --color-dark: #0a0a0c;
+  }
+
+  html,
+  body {
+    @apply bg-[#fdfdfc] text-[#1a1a1a] font-sans antialiased overflow-x-hidden;
+    /* Optional: hide default cursor if custom cursor is active on non-touch devices */
+  }
+
+  /* Custom selection */
+  ::selection {
+    @apply bg-kibo-orange text-white;
+  }
+
+  /* Typography extensions */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading tracking-tight;
+  }
+}
+
+@layer utilities {
+  /* Hide scrollbar for clean aesthetics */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .splash-screen {
+    @apply fixed inset-0 z-[9999] flex items-center justify-center bg-[#0a0a0c] text-white;
+  }
+}
