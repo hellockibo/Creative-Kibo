@@ -13,7 +13,8 @@ import { Portfolio } from './pages/Portfolio';
 import { FuturePlatform } from './pages/FuturePlatform';
 import { Contact } from './pages/Contact';
 import { NotFound } from './pages/NotFound';
-import { SupabaseDemo } from './pages/SupabaseDemo';
+import { AdminLogin } from './pages/AdminLogin';
+import { AdminPanel } from './pages/AdminPanel';
 
 export default function App() {
   const location = useLocation();
@@ -60,7 +61,8 @@ export default function App() {
           <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/future-platform" element={<FuturePlatform />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/supabase" element={<SupabaseDemo />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
+          <Route path="/admin" element={<AdminPanel />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AnimatePresence>

@@ -1,41 +1,90 @@
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+
+// Load environment variables from server/.env
+require('dotenv').config({
+  path: path.resolve(__dirname, '.env')
+});
+
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
 const authRoutes = require('./routes/auth');
 const portfolioRoutes = require('./routes/portfolio');
-const supabaseRoutes = require('./routes/supabase');
 
 const app = express();
+
 const PORT = process.env.PORT || 5000;
 
-// Middleware
+// --------------------------------------------------
+// CHECK ENVIRONMENT VARIABLES
+// --------------------------------------------------
+
+console.log('----------------------------------------');
+console.log('KIBO Backend Starting...');
+console.log('PORT:', PORT);
+console.log('----------------------------------------');
+
+
+// --------------------------------------------------
+// MIDDLEWARE
+// --------------------------------------------------
+
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
-  credentials: true
-}));
 
-// Routes
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    credentials: true
+  })
+);
+
+
+// --------------------------------------------------
+// ROUTES
+// --------------------------------------------------
+
 app.use('/api/auth', authRoutes);
-app.use('/api/portfolio', portfolioRoutes);
-app.use('/api/supabase', supabaseRoutes);
 
-// Health check
+app.use('/api/portfolio', portfolioRoutes);
+
+
+// --------------------------------------------------
+// HEALTH CHECK
+// --------------------------------------------------
+
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date() });
+  res.json({
+    status: 'ok',
+    timestamp: new Date()
+  });
 });
 
-// API fallback for unexpected errors
+
+// --------------------------------------------------
+// API ERROR HANDLER
+// --------------------------------------------------
+
 app.use('/api', (err, req, res, next) => {
   console.error('API error:', err);
-  res.status(500).json({ error: 'Internal server error' });
+
+  res.status(500).json({
+    success: false,
+    error: err.message || 'Internal server error'
+  });
 });
 
-// Start server
+
+// --------------------------------------------------
+// START SERVER
+// --------------------------------------------------
+
 app.listen(PORT, () => {
-  console.log(`KIBO Backend running on port ${PORT}`);
+  console.log('');
+  console.log('========================================');
+  console.log(`🚀 KIBO Backend running on port ${PORT}`);
+  console.log(`🌐 http://localhost:${PORT}`);
+  console.log('========================================');
 });

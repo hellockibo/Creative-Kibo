@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import { useCursorStore } from '../../store/useCursorStore';
@@ -8,7 +8,6 @@ const navLinks = [
   { name: 'Home', path: '/' },
   { name: 'About', path: '/about' },
   { name: 'Services', path: '/services' },
-  { name: 'Supabase', path: '/supabase' },
   { name: 'Portfolio', path: '/portfolio' },
   { name: 'Future Platform', path: '/future-platform' }
 ];
@@ -17,6 +16,9 @@ export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const logoTapRef = useRef(0);
+  const lastTapRef = useRef(0);
   const { setCursorState } = useCursorStore();
 
   useEffect(() => {
@@ -34,6 +36,33 @@ export function Navbar() {
 
   const handleMouseEnter = () => setCursorState('hover');
   const handleMouseLeave = () => setCursorState('default');
+
+  const handleLogoClick = (event) => {
+    event.preventDefault();
+
+    const now = Date.now();
+    const timeSinceLastTap = now - lastTapRef.current;
+
+    if (timeSinceLastTap < 800) {
+      logoTapRef.current += 1;
+    } else {
+      logoTapRef.current = 1;
+    }
+
+    lastTapRef.current = now;
+
+    if (logoTapRef.current >= 3) {
+      logoTapRef.current = 0;
+      navigate('/admin-login');
+      return;
+    }
+
+    if (location.pathname === '/') {
+      window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+    } else {
+      navigate('/');
+    }
+  };
 
   const isDark = location.pathname === '/future-platform';
 
@@ -56,11 +85,7 @@ export function Navbar() {
             className="flex items-center group z-10 w-48"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
-            onClick={() => {
-              if (location.pathname === '/') {
-                window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
-              }
-            }}
+            onClick={handleLogoClick}
             aria-label="Creative KIBO — Home"
           >
             <img 
