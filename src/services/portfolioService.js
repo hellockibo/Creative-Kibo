@@ -1,144 +1,122 @@
-import supabase from '../lib/supabaseClient'
+// Portfolio Service using localStorage (No Database Required)
+// All projects are stored in the browser's localStorage
 
-const PORTFOLIO_IMAGES_BUCKET = 'portfolio-images'
-const PORTFOLIO_VIDEOS_BUCKET = 'portfolio-videos'
+const STORAGE_KEY = 'kibo_portfolio_projects'
 
-// Fetch all projects
+// Get all projects from localStorage
 export async function fetchPortfolioProjects() {
   try {
-    const { data, error } = await supabase
-      .from('portfolio_projects')
-      .select('*')
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      console.error('Error fetching projects:', error)
-      return []
-    }
-
-    return data || []
-  } catch (err) {
-    console.error('Error fetching projects:', err)
+    const stored = localStorage.getItem(STORAGE_KEY)
+    return stored ? JSON.parse(stored) : []
+  } catch (error) {
+    console.error('Error fetching projects:', error)
     return []
   }
+}
+
+// Save all projects to localStorage
+function saveProjects(projects) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(projects))
 }
 
 // Create a new project
 export async function createPortfolioProject(project) {
   try {
-    const { data, error } = await supabase
-      .from('portfolio_projects')
-      .insert([
-        {
-          project_name: project.projectName,
-          project_type: project.projectType,
-          image_url: project.imageUrl || null,
-          video_url: project.videoUrl || null,
-          description: project.description,
-        }
-      ])
-      .select()
-      .single()
-
-    if (error) throw new Error(error.message)
-
-    return data
-  } catch (err) {
-    throw new Error(err.message || 'Failed to create project')
+    const projects = await fetchPortfolioProjects()
+    const newProject = {
+      id: Date.now().toString(),
+      project_name: project.projectName,
+      project_type: project.projectType,
+      images: project.images || [],
+      videos: project.videos || [],
+      description: project.description,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+    projects.push(newProject)
+    saveProjects(projects)
+    return newProject
+  } catch (error) {
+    throw new Error(error.message || 'Failed to create project')
   }
 }
 
 // Update a project
 export async function updatePortfolioProject(id, project) {
   try {
-    const { data, error } = await supabase
-      .from('portfolio_projects')
-      .update({
-        project_name: project.projectName,
-        project_type: project.projectType,
-        image_url: project.imageUrl || null,
-        video_url: project.videoUrl || null,
-        description: project.description,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', id)
-      .select()
-      .single()
+    const projects = await fetchPortfolioProjects()
+    const index = projects.findIndex((p) => p.id === id)
 
-    if (error) throw new Error(error.message)
+    if (index === -1) throw new Error('Project not found')
 
-    return data
-  } catch (err) {
-    throw new Error(err.message || 'Failed to update project')
+    projects[index] = {
+      ...projects[index],
+      project_name: project.projectName,
+      project_type: project.projectType,
+      images: project.images || [],
+      videos: project.videos || [],
+      description: project.description,
+      updated_at: new Date().toISOString(),
+    }
+
+    saveProjects(projects)
+    return projects[index]
+  } catch (error) {
+    throw new Error(error.message || 'Failed to update project')
   }
 }
 
 // Delete a project
 export async function deletePortfolioProject(id) {
   try {
-    const { error } = await supabase
-      .from('portfolio_projects')
-      .delete()
-      .eq('id', id)
+    const projects = await fetchPortfolioProjects()
+    const filtered = projects.filter((p) => p.id !== id)
 
-    if (error) throw new Error(error.message)
+    if (filtered.length === projects.length) {
+      throw new Error('Project not found')
+    }
 
+    saveProjects(filtered)
     return true
-  } catch (err) {
-    throw new Error(err.message || 'Failed to delete project')
+  } catch (error) {
+    throw new Error(error.message || 'Failed to delete project')
   }
 }
 
-// Upload image to Supabase Storage
+// Upload image - Convert to Base64 Data URL (no server upload needed)
 export async function uploadPortfolioImage(file) {
   if (!file) return ''
 
-  try {
-    const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`
-    const filePath = `projects/${fileName}`
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
 
-    const { data, error } = await supabase.storage
-      .from(PORTFOLIO_IMAGES_BUCKET)
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false,
-      })
+    reader.onload = (event) => {
+      resolve(event.target.result) // Returns data:image/... URL
+    }
 
-    if (error) throw new Error(error.message)
+    reader.onerror = () => {
+      reject(new Error('Failed to read image file'))
+    }
 
-    const { data: publicUrlData } = supabase.storage
-      .from(PORTFOLIO_IMAGES_BUCKET)
-      .getPublicUrl(data.path)
-
-    return publicUrlData.publicUrl
-  } catch (err) {
-    throw new Error(err.message || 'Failed to upload image')
-  }
+    reader.readAsDataURL(file)
+  })
 }
 
-// Upload video to Supabase Storage
+// Upload video - Convert to Base64 Data URL (no server upload needed)
 export async function uploadPortfolioVideo(file) {
   if (!file) return ''
 
-  try {
-    const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`
-    const filePath = `videos/${fileName}`
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
 
-    const { data, error } = await supabase.storage
-      .from(PORTFOLIO_VIDEOS_BUCKET)
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false,
-      })
+    reader.onload = (event) => {
+      resolve(event.target.result) // Returns data:video/... URL
+    }
 
-    if (error) throw new Error(error.message)
+    reader.onerror = () => {
+      reject(new Error('Failed to read video file'))
+    }
 
-    const { data: publicUrlData } = supabase.storage
-      .from(PORTFOLIO_VIDEOS_BUCKET)
-      .getPublicUrl(data.path)
-
-    return publicUrlData.publicUrl
-  } catch (err) {
-    throw new Error(err.message || 'Failed to upload video')
-  }
+    reader.readAsDataURL(file)
+  })
 }

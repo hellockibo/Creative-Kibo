@@ -69,15 +69,6 @@ export function Home() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
             >
-              <div className="avatar-group flex -space-x-3">
-                <div className="w-10 h-10 rounded-full bg-gray-200 border-2 border-[#fdfdfc] overflow-hidden"><img src="https://i.pravatar.cc/100?img=1" alt="Avatar" className="w-full h-full object-cover"/></div>
-                <div className="w-10 h-10 rounded-full bg-gray-200 border-2 border-[#fdfdfc] overflow-hidden"><img src="https://i.pravatar.cc/100?img=2" alt="Avatar" className="w-full h-full object-cover"/></div>
-                <div className="w-10 h-10 rounded-full bg-gray-200 border-2 border-[#fdfdfc] overflow-hidden"><img src="https://i.pravatar.cc/100?img=3" alt="Avatar" className="w-full h-full object-cover"/></div>
-                <div className="w-10 h-10 rounded-full bg-gray-100 border-2 border-[#fdfdfc] flex items-center justify-center text-gray-500">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                </div>
-              </div>
-              <p className="text-sm text-gray-500 font-medium leading-snug">Trusted by founders, creators<br/>and visionaries.</p>
             </motion.div>
           </div>
 

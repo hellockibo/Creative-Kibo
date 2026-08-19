@@ -41,7 +41,7 @@ export const alienAnimations = {
   [AlienAnimationState.TELEPORT]: {
     src: '/alien/processed/alien-teleport.webp',
     loop: false,
-    duration: 4000,
+    duration: 3630,
     alt: 'KIBO alien teleporting',
   },
 };

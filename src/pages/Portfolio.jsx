@@ -62,11 +62,11 @@ export function Portfolio() {
                 >
                   <div className="grid gap-0 md:grid-cols-2">
                     <div className="min-h-[280px] bg-[#f3efe9]">
-                      {featuredProject.image_url ? (
-                        <img src={featuredProject.image_url} alt={featuredProject.project_name} className="h-full w-full object-cover" />
+                      {featuredProject.images && featuredProject.images.length > 0 ? (
+                        <img src={featuredProject.images[0]} alt={featuredProject.project_name} className="h-full w-full object-cover" />
                       ) : (
                         <div className="flex h-full items-center justify-center text-lg font-medium text-[#60607A]">
-                          Image preview
+                          No images
                         </div>
                       )}
                     </div>
@@ -76,16 +76,32 @@ export function Portfolio() {
                       </span>
                       <h2 className="text-3xl font-bold text-[#1a1a1a] md:text-4xl">{featuredProject.project_name}</h2>
                       <p className="mt-4 text-base leading-relaxed text-[#4a4a52]">{featuredProject.description}</p>
-                      {featuredProject.video_url && (
-                        <a
-                          href={featuredProject.video_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="mt-6 inline-flex w-fit items-center rounded-full bg-[#1a1a1a] px-5 py-3 font-semibold text-white transition hover:bg-[#D57B03]"
-                        >
-                          Watch Video
-                        </a>
-                      )}
+                      
+                      {/* Show all media */}
+                      <div className="mt-6 flex flex-wrap gap-2">
+                        {featuredProject.images && featuredProject.images.slice(1).map((img, idx) => (
+                          <a
+                            key={`img-${idx}`}
+                            href={img}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="rounded-lg bg-[#D57B03]/10 px-3 py-2 text-xs font-medium text-[#D57B03] hover:bg-[#D57B03]/20"
+                          >
+                            Image {idx + 2}
+                          </a>
+                        ))}
+                        {featuredProject.videos && featuredProject.videos.map((vid, idx) => (
+                          <a
+                            key={`vid-${idx}`}
+                            href={vid}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="rounded-lg bg-[#1a1a1a] px-3 py-2 text-xs font-medium text-white hover:bg-[#D57B03]"
+                          >
+                            Video {idx + 1}
+                          </a>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </motion.article>
@@ -101,10 +117,10 @@ export function Portfolio() {
                     className="overflow-hidden rounded-[28px] border border-[#60607A]/10 bg-white shadow-md shadow-[#60607A]/5"
                   >
                     <div className="h-56 bg-[#f3efe9]">
-                      {project.image_url ? (
-                        <img src={project.image_url} alt={project.project_name} className="h-full w-full object-cover" />
+                      {project.images && project.images.length > 0 ? (
+                        <img src={project.images[0]} alt={project.project_name} className="h-full w-full object-cover" />
                       ) : (
-                        <div className="flex h-full items-center justify-center text-[#60607A]">No image</div>
+                        <div className="flex h-full items-center justify-center text-[#60607A]">No images</div>
                       )}
                     </div>
                     <div className="p-6">
@@ -112,14 +128,43 @@ export function Portfolio() {
                         <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[#D57B03]">
                           {project.project_type}
                         </span>
-                        {project.video_url && (
-                          <a href={project.video_url} target="_blank" rel="noreferrer" className="text-sm font-medium text-[#1a1a1a] hover:text-[#D57B03]">
-                            Video
-                          </a>
-                        )}
+                        <div className="flex gap-1">
+                          {project.images && project.images.length > 1 && (
+                            <span className="text-xs font-medium text-[#60607A] bg-[#f3efe9] px-2 py-1 rounded">
+                              {project.images.length} 📷
+                            </span>
+                          )}
+                          {project.videos && project.videos.length > 0 && (
+                            <span className="text-xs font-medium text-[#60607A] bg-[#f3efe9] px-2 py-1 rounded">
+                              {project.videos.length} 🎬
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <h3 className="text-2xl font-bold text-[#1a1a1a]">{project.project_name}</h3>
                       <p className="mt-3 line-clamp-4 text-sm leading-relaxed text-[#4a4a52]">{project.description}</p>
+                      
+                      {/* Media links */}
+                      {(project.images || []).length > 1 && (
+                        <a
+                          href={project.images[1]}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-4 inline-block rounded-lg bg-[#D57B03]/10 px-3 py-1 text-xs font-medium text-[#D57B03] hover:bg-[#D57B03]/20"
+                        >
+                          View Gallery
+                        </a>
+                      )}
+                      {project.videos && project.videos.length > 0 && (
+                        <a
+                          href={project.videos[0]}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-4 ml-2 inline-block rounded-lg bg-[#1a1a1a] px-3 py-1 text-xs font-medium text-white hover:bg-[#D57B03]"
+                        >
+                          Watch Videos
+                        </a>
+                      )}
                     </div>
                   </motion.article>
                 ))}

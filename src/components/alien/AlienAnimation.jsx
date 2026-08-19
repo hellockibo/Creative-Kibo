@@ -1,6 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 export function AlienAnimation({ animation, onAnimationEnd, visible = true, className = '' }) {
+  const videoRef = useRef(null);
+
   useEffect(() => {
     if (!visible || animation.loop || typeof animation.duration !== 'number') {
       return undefined;
@@ -13,8 +15,40 @@ export function AlienAnimation({ animation, onAnimationEnd, visible = true, clas
     return () => window.clearTimeout(timer);
   }, [animation, onAnimationEnd, visible]);
 
+  // Handle video playback for non-looping animations
+  useEffect(() => {
+    if (!visible || !videoRef.current) return;
+
+    if (animation.loop) {
+      videoRef.current.loop = true;
+      videoRef.current.play().catch(() => {});
+    } else {
+      videoRef.current.loop = false;
+      videoRef.current.play().catch(() => {});
+    }
+  }, [animation, visible]);
+
   if (!visible) {
     return null;
+  }
+
+  // Determine if we should use video or img tag
+  const isWebP = animation.src?.endsWith('.webp');
+
+  if (isWebP) {
+    return (
+      <video
+        key={animation.src}
+        ref={videoRef}
+        src={animation.src}
+        className={`block w-full h-full object-contain select-none ${className}`}
+        draggable="false"
+        autoPlay
+        muted
+        aria-hidden="true"
+        style={{ display: 'block' }}
+      />
+    );
   }
 
   return (
