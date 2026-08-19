@@ -1,10 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { motion } from 'framer-motion';
+import { ArrowUpRight, ChevronLeft, ChevronRight, Minus, Play, Plus, X } from 'lucide-react';
 import { fetchPortfolioProjects } from '../services/portfolioService';
 
 export function Portfolio() {
   const [projects, setProjects] = useState([]);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [activeMediaIndex, setActiveMediaIndex] = useState(0);
+  const [mediaZoom, setMediaZoom] = useState(1);
 
   useEffect(() => {
     const loadProjects = async () => {
@@ -16,6 +20,38 @@ export function Portfolio() {
   }, []);
 
   const featuredProject = useMemo(() => projects[0], [projects]);
+
+  const openProject = (project) => {
+    setSelectedProject(project);
+    setActiveMediaIndex(0);
+    setMediaZoom(1);
+  };
+
+  const getMedia = (project) => [
+    ...(project.images || []).map((src) => ({ type: 'image', src })),
+    ...(project.videos || []).map((src) => ({ type: 'video', src })),
+  ];
+
+  const selectedMedia = selectedProject ? getMedia(selectedProject) : [];
+
+  useEffect(() => {
+    if (!selectedProject) return undefined;
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setSelectedProject(null);
+      if (event.key === 'ArrowLeft') setActiveMediaIndex((current) => (current - 1 + selectedMedia.length) % selectedMedia.length);
+      if (event.key === 'ArrowRight') setActiveMediaIndex((current) => (current + 1) % selectedMedia.length);
+      if (event.key === '+' || event.key === '=') setMediaZoom((current) => Math.min(2, current + 0.25));
+      if (event.key === '-') setMediaZoom((current) => Math.max(1, current - 0.25));
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [selectedProject, selectedMedia.length]);
 
   return (
     <PageWrapper>
@@ -55,6 +91,7 @@ export function Portfolio() {
             <div className="space-y-10">
               {featuredProject && (
                 <motion.article
+                  onClick={() => openProject(featuredProject)}
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8 }}
@@ -76,32 +113,9 @@ export function Portfolio() {
                       </span>
                       <h2 className="text-3xl font-bold text-[#1a1a1a] md:text-4xl">{featuredProject.project_name}</h2>
                       <p className="mt-4 text-base leading-relaxed text-[#4a4a52]">{featuredProject.description}</p>
-                      
-                      {/* Show all media */}
-                      <div className="mt-6 flex flex-wrap gap-2">
-                        {featuredProject.images && featuredProject.images.slice(1).map((img, idx) => (
-                          <a
-                            key={`img-${idx}`}
-                            href={img}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="rounded-lg bg-[#D57B03]/10 px-3 py-2 text-xs font-medium text-[#D57B03] hover:bg-[#D57B03]/20"
-                          >
-                            Image {idx + 2}
-                          </a>
-                        ))}
-                        {featuredProject.videos && featuredProject.videos.map((vid, idx) => (
-                          <a
-                            key={`vid-${idx}`}
-                            href={vid}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="rounded-lg bg-[#1a1a1a] px-3 py-2 text-xs font-medium text-white hover:bg-[#D57B03]"
-                          >
-                            Video {idx + 1}
-                          </a>
-                        ))}
-                      </div>
+                      <button type="button" className="mt-6 inline-flex w-fit items-center gap-2 rounded-full bg-[#1a1a1a] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#D57B03]">
+                        Open project <ArrowUpRight size={16} />
+                      </button>
                     </div>
                   </div>
                 </motion.article>
@@ -111,6 +125,7 @@ export function Portfolio() {
                 {projects.slice(1).map((project) => (
                   <motion.article
                     key={project.id}
+                    onClick={() => openProject(project)}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
@@ -144,27 +159,9 @@ export function Portfolio() {
                       <h3 className="text-2xl font-bold text-[#1a1a1a]">{project.project_name}</h3>
                       <p className="mt-3 line-clamp-4 text-sm leading-relaxed text-[#4a4a52]">{project.description}</p>
                       
-                      {/* Media links */}
-                      {(project.images || []).length > 1 && (
-                        <a
-                          href={project.images[1]}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="mt-4 inline-block rounded-lg bg-[#D57B03]/10 px-3 py-1 text-xs font-medium text-[#D57B03] hover:bg-[#D57B03]/20"
-                        >
-                          View Gallery
-                        </a>
-                      )}
-                      {project.videos && project.videos.length > 0 && (
-                        <a
-                          href={project.videos[0]}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="mt-4 ml-2 inline-block rounded-lg bg-[#1a1a1a] px-3 py-1 text-xs font-medium text-white hover:bg-[#D57B03]"
-                        >
-                          Watch Videos
-                        </a>
-                      )}
+                      <button type="button" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#D57B03] hover:text-[#F08A2D]">
+                        Open project <ArrowUpRight size={15} />
+                      </button>
                     </div>
                   </motion.article>
                 ))}
@@ -173,6 +170,60 @@ export function Portfolio() {
           )}
         </div>
       </section>
+
+      {selectedProject && selectedMedia.length > 0 && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#11111a]/80 p-4 backdrop-blur-sm" onClick={() => setSelectedProject(null)}>
+          <div className="relative max-h-[92vh] w-full max-w-6xl overflow-hidden rounded-[28px] bg-white shadow-2xl" onClick={(event) => event.stopPropagation()}>
+            <button type="button" aria-label="Close project viewer" onClick={() => setSelectedProject(null)} className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-[#1a1a1a] shadow-md transition hover:bg-[#D57B03] hover:text-white">
+              <X size={20} />
+            </button>
+
+            <div className="grid max-h-[92vh] overflow-y-auto lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.55fr)]">
+              <div className="relative flex min-h-[420px] min-w-0 items-center justify-center overflow-hidden bg-[#171721] p-6 sm:min-h-[620px] sm:p-10">
+                {selectedMedia[activeMediaIndex].type === 'image' ? (
+                  <img src={selectedMedia[activeMediaIndex].src} alt={`${selectedProject.project_name} media ${activeMediaIndex + 1}`} className="max-h-[70vh] max-w-full object-contain transition-transform duration-200" style={{ transform: `scale(${mediaZoom})` }} />
+                ) : (
+                  <video src={selectedMedia[activeMediaIndex].src} controls autoPlay className="max-h-[70vh] max-w-full" />
+                )}
+                <div className="absolute bottom-5 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full bg-white/95 p-1 shadow-lg">
+                  <button type="button" aria-label="Zoom out" disabled={mediaZoom === 1} onClick={() => setMediaZoom((current) => Math.max(1, current - 0.25))} className="flex h-9 w-9 items-center justify-center rounded-full text-[#1a1a1a] transition hover:bg-[#D57B03] hover:text-white disabled:opacity-30">
+                    <Minus size={16} />
+                  </button>
+                  <span className="min-w-12 text-center text-xs font-semibold text-[#1a1a1a]">{Math.round(mediaZoom * 100)}%</span>
+                  <button type="button" aria-label="Zoom in" disabled={mediaZoom === 2} onClick={() => setMediaZoom((current) => Math.min(2, current + 0.25))} className="flex h-9 w-9 items-center justify-center rounded-full text-[#1a1a1a] transition hover:bg-[#D57B03] hover:text-white disabled:opacity-30">
+                    <Plus size={16} />
+                  </button>
+                </div>
+                {selectedMedia.length > 1 && (
+                  <>
+                    <button type="button" aria-label="Previous media" onClick={() => { setActiveMediaIndex((current) => (current - 1 + selectedMedia.length) % selectedMedia.length); setMediaZoom(1); }} className="absolute left-5 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-[#1a1a1a] shadow-lg hover:bg-[#D57B03] hover:text-white">
+                      <ChevronLeft size={22} />
+                    </button>
+                    <button type="button" aria-label="Next media" onClick={() => { setActiveMediaIndex((current) => (current + 1) % selectedMedia.length); setMediaZoom(1); }} className="absolute right-5 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-[#1a1a1a] shadow-lg hover:bg-[#D57B03] hover:text-white">
+                      <ChevronRight size={22} />
+                    </button>
+                  </>
+                )}
+              </div>
+
+              <div className="flex flex-col p-6 sm:p-8">
+                <span className="w-fit rounded-full bg-[#D57B03]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#D57B03]">{selectedProject.project_type}</span>
+                <h2 className="mt-4 text-3xl font-bold text-[#1a1a1a]">{selectedProject.project_name}</h2>
+                <p className="mt-4 leading-relaxed text-[#4a4a52]">{selectedProject.description}</p>
+                <p className="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-[#60607A]">Media {activeMediaIndex + 1} of {selectedMedia.length}</p>
+                <div className="mt-3 flex gap-3 overflow-x-auto pb-2 snap-x">
+                  {selectedMedia.map((media, index) => (
+                    <button type="button" key={`${media.type}-${index}`} onClick={() => { setActiveMediaIndex(index); setMediaZoom(1); }} className={`relative h-20 w-24 shrink-0 snap-start overflow-hidden rounded-xl border-2 ${activeMediaIndex === index ? 'border-[#D57B03] shadow-md' : 'border-transparent opacity-70 hover:opacity-100'}`}>
+                      {media.type === 'image' ? <img src={media.src} alt={`Thumbnail ${index + 1}`} className="h-full w-full object-cover" /> : <video src={media.src} className="h-full w-full object-cover" />}
+                      {media.type === 'video' && <span className="absolute inset-0 flex items-center justify-center bg-black/25 text-white"><Play size={18} fill="currentColor" /></span>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </PageWrapper>
   );
 }

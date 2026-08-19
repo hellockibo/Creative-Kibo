@@ -246,6 +246,17 @@ export function AdminPanel() {
 
         <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
           <form onSubmit={handleSubmit} className="rounded-[30px] border border-[#60607A]/10 bg-white p-6 shadow-lg shadow-[#60607A]/5">
+            <div className="mb-8 flex items-center justify-between border-b border-[#60607A]/10 pb-5">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#D57B03]">{editingId ? 'Edit project' : 'New project'}</p>
+                <h2 className="mt-1 text-2xl font-bold text-[#1a1a1a]">Build your case study</h2>
+              </div>
+              <div className="hidden rounded-2xl bg-[#f9f7f3] px-4 py-3 text-right sm:block">
+                <p className="text-2xl font-bold text-[#1a1a1a]">{form.images.length + form.videos.length}</p>
+                <p className="text-xs text-[#60607A]">media items</p>
+              </div>
+            </div>
+
             <div className="grid gap-5 md:grid-cols-2">
               <label className="md:col-span-2 block">
                 <span className="mb-2 block text-sm font-medium text-[#2D3748]">Project name</span>
@@ -273,17 +284,11 @@ export function AdminPanel() {
                 </select>
               </label>
 
-              <label className="block">
-                <span className="mb-2 block text-sm font-medium text-[#2D3748]">Category</span>
-                <input
-                  value={form.projectType}
-                  readOnly
-                  className="w-full rounded-2xl border border-[#60607A]/20 bg-[#f2f2f2] px-4 py-3 text-[#4a4a52]"
-                />
-              </label>
-
               <label className="md:col-span-2 block">
-                <span className="mb-2 block text-sm font-medium text-[#2D3748]">Project images (multiple)</span>
+                <div className="mb-2 flex items-end justify-between gap-3">
+                  <span className="block text-sm font-medium text-[#2D3748]">Project images</span>
+                  <span className="text-xs text-[#60607A]">{form.images.length} added</span>
+                </div>
                 <div
                   onDragEnter={(e) => handleDrag(e, true)}
                   onDragLeave={(e) => handleDrag(e, true)}
@@ -314,20 +319,21 @@ export function AdminPanel() {
                     <p className="text-sm font-medium text-[#2D3748]">
                       Drag and drop images here or <span className="text-[#D57B03]">click to browse</span>
                     </p>
-                    <p className="mt-1 text-xs text-[#60607A]">PNG, JPG, GIF up to 20MB each</p>
+                    <p className="mt-1 text-xs text-[#60607A]">PNG, JPG, GIF. Images are optimized automatically.</p>
                   </div>
                 </div>
                 {form.images.length > 0 && (
                   <div className="mt-6">
-                    <p className="mb-4 text-sm font-semibold text-[#1a1a1a]">Uploaded Images ({form.images.length})</p>
                     <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4">
                       {form.images.map((img, idx) => (
-                        <div key={idx} className="group relative rounded-xl overflow-hidden border border-[#60607A]/10 bg-[#f9f7f3] shadow-sm hover:shadow-md transition">
-                          <img src={img} alt={`Preview ${idx}`} className="h-28 w-full object-cover" />
+                        <div key={idx} className="group relative overflow-hidden rounded-2xl border border-[#60607A]/10 bg-[#f9f7f3] shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+                          <img src={img} alt={`Preview ${idx + 1}`} className="aspect-[4/3] h-auto w-full object-cover" />
+                          <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-1 text-[10px] font-bold text-[#1a1a1a]">{String(idx + 1).padStart(2, '0')}</span>
                           <button
                             type="button"
                             onClick={() => removeImage(idx)}
-                            className="absolute inset-0 bg-red-500/0 group-hover:bg-red-500/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-white font-bold text-3xl"
+                            aria-label={`Remove image ${idx + 1}`}
+                            className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-[#1a1a1a]/75 text-lg font-medium text-white opacity-0 transition group-hover:opacity-100 hover:bg-red-500"
                           >
                             ×
                           </button>
@@ -454,8 +460,8 @@ export function AdminPanel() {
                   <div key={project.id} className="rounded-2xl border border-[#60607A]/10 bg-[#f9f7f3] p-4 hover:shadow-md transition">
                     <div className="flex items-start justify-between gap-3 mb-3">
                       <div className="flex-1">
-                        <p className="text-lg font-semibold text-[#1a1a1a] line-clamp-1">{project.projectName}</p>
-                        <p className="mt-1 text-xs font-medium text-[#D57B03] uppercase tracking-wide">{project.projectType}</p>
+                        <p className="text-lg font-semibold text-[#1a1a1a] line-clamp-1">{project.project_name || project.projectName}</p>
+                        <p className="mt-1 text-xs font-medium uppercase tracking-wide text-[#D57B03]">{project.project_type || project.projectType}</p>
                       </div>
                       <div className="flex gap-1 flex-shrink-0">
                         <button

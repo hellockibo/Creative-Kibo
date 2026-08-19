@@ -16,7 +16,14 @@ export async function fetchPortfolioProjects() {
 
 // Save all projects to localStorage
 function saveProjects(projects) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(projects))
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(projects))
+  } catch (error) {
+    if (error.name === 'QuotaExceededError') {
+      throw new Error('Browser storage is full. Use smaller images or remove unused projects.')
+    }
+    throw error
+  }
 }
 
 // Create a new project
@@ -83,22 +90,30 @@ export async function deletePortfolioProject(id) {
   }
 }
 
-// Upload image - Convert to Base64 Data URL (no server upload needed)
 export async function uploadPortfolioImage(file) {
   if (!file) return ''
 
   return new Promise((resolve, reject) => {
-    const reader = new FileReader()
+    const image = new Image()
+    const objectUrl = URL.createObjectURL(file)
 
-    reader.onload = (event) => {
-      resolve(event.target.result) // Returns data:image/... URL
+    image.onload = () => {
+      const maxDimension = 2400
+      const scale = Math.min(1, maxDimension / Math.max(image.width, image.height))
+      const canvas = document.createElement('canvas')
+      canvas.width = Math.max(1, Math.round(image.width * scale))
+      canvas.height = Math.max(1, Math.round(image.height * scale))
+      canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height)
+      URL.revokeObjectURL(objectUrl)
+      resolve(canvas.toDataURL('image/webp', 0.82))
     }
 
-    reader.onerror = () => {
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl)
       reject(new Error('Failed to read image file'))
     }
 
-    reader.readAsDataURL(file)
+    image.src = objectUrl
   })
 }
 
