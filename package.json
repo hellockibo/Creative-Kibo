@@ -12,9 +12,18 @@
     "devall": "concurrently \"npm run dev\" \"npm run server\""
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.10.1",
     "clsx": "^2.1.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
     "framer-motion": "^13.0.0",
+    "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.30.0",
+    "mongodb": "^7.5.0",
+    "multer": "^2.2.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.2",

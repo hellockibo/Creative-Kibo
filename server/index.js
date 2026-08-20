@@ -78,7 +78,7 @@ app.get('/api/health', (req, res) => {
 // API ERROR HANDLER
 // --------------------------------------------------
 
-app.use('/api', (err, req, res, next) => {
+app.use((err, req, res, next) => {
   console.error('API error:', err);
 
   if (res.headersSent) return next(err);
@@ -96,10 +96,14 @@ app.use('/api', (err, req, res, next) => {
 // START SERVER
 // --------------------------------------------------
 
-app.listen(PORT, () => {
-  console.log('');
-  console.log('========================================');
-  console.log(`🚀 KIBO Backend running on port ${PORT}`);
-  console.log(`🌐 http://localhost:${PORT}`);
-  console.log('========================================');
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log('');
+    console.log('========================================');
+    console.log(`KIBO Backend running on port ${PORT}`);
+    console.log(`http://localhost:${PORT}`);
+    console.log('========================================');
+  });
+}
+
+module.exports = app;
