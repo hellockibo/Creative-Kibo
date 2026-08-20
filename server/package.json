@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon index.js",
+    "start": "node index.js",
+    "test": "node --check index.js"
   },
   "keywords": [],
   "author": "",
@@ -13,13 +15,15 @@
   "dependencies": {
     "@prisma/adapter-better-sqlite3": "^7.9.1",
     "@prisma/client": "^7.9.1",
-    "@supabase/supabase-js": "^2.28.0",
     "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.10.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
+    "mongodb": "^7.5.0",
+    "multer": "^2.2.0",
     "pg": "^8.22.0",
     "prisma": "^7.9.1",
     "zod": "^4.4.3"

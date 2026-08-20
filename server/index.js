@@ -70,6 +70,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api', (err, req, res, next) => {
   console.error('API error:', err);
 
+  if (res.headersSent) return next(err);
   res.status(500).json({
     success: false,
     error: err.message || 'Internal server error'

@@ -1,137 +1,56 @@
-// Portfolio Service using localStorage (No Database Required)
-// All projects are stored in the browser's localStorage
+const API_URL = '/api/portfolio'
 
-const STORAGE_KEY = 'kibo_portfolio_projects'
+async function request(path = '', options = {}) {
+  let response
+  try {
+    response = await fetch(`${API_URL}${path}`, {
+      credentials: 'include',
+      ...options,
+    })
+  } catch (error) {
+    throw new Error('Backend is not running. Start the app with npm run dev.')
+  }
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(data.error || 'Portfolio request failed')
+  return data
+}
 
-// Get all projects from localStorage
 export async function fetchPortfolioProjects() {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    return stored ? JSON.parse(stored) : []
-  } catch (error) {
-    console.error('Error fetching projects:', error)
-    return []
-  }
+  return request()
 }
 
-// Save all projects to localStorage
-function saveProjects(projects) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(projects))
-  } catch (error) {
-    if (error.name === 'QuotaExceededError') {
-      throw new Error('Browser storage is full. Use smaller images or remove unused projects.')
-    }
-    throw error
-  }
-}
-
-// Create a new project
 export async function createPortfolioProject(project) {
-  try {
-    const projects = await fetchPortfolioProjects()
-    const newProject = {
-      id: Date.now().toString(),
-      project_name: project.projectName,
-      project_type: project.projectType,
-      images: project.images || [],
-      videos: project.videos || [],
-      description: project.description,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    }
-    projects.push(newProject)
-    saveProjects(projects)
-    return newProject
-  } catch (error) {
-    throw new Error(error.message || 'Failed to create project')
-  }
+  return request('', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(project),
+  })
 }
 
-// Update a project
 export async function updatePortfolioProject(id, project) {
-  try {
-    const projects = await fetchPortfolioProjects()
-    const index = projects.findIndex((p) => p.id === id)
-
-    if (index === -1) throw new Error('Project not found')
-
-    projects[index] = {
-      ...projects[index],
-      project_name: project.projectName,
-      project_type: project.projectType,
-      images: project.images || [],
-      videos: project.videos || [],
-      description: project.description,
-      updated_at: new Date().toISOString(),
-    }
-
-    saveProjects(projects)
-    return projects[index]
-  } catch (error) {
-    throw new Error(error.message || 'Failed to update project')
-  }
+  return request(`/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(project),
+  })
 }
 
-// Delete a project
 export async function deletePortfolioProject(id) {
-  try {
-    const projects = await fetchPortfolioProjects()
-    const filtered = projects.filter((p) => p.id !== id)
-
-    if (filtered.length === projects.length) {
-      throw new Error('Project not found')
-    }
-
-    saveProjects(filtered)
-    return true
-  } catch (error) {
-    throw new Error(error.message || 'Failed to delete project')
-  }
+  return request(`/${id}`, { method: 'DELETE' })
 }
 
-export async function uploadPortfolioImage(file) {
+async function uploadPortfolioMedia(file) {
   if (!file) return ''
-
-  return new Promise((resolve, reject) => {
-    const image = new Image()
-    const objectUrl = URL.createObjectURL(file)
-
-    image.onload = () => {
-      const maxDimension = 2400
-      const scale = Math.min(1, maxDimension / Math.max(image.width, image.height))
-      const canvas = document.createElement('canvas')
-      canvas.width = Math.max(1, Math.round(image.width * scale))
-      canvas.height = Math.max(1, Math.round(image.height * scale))
-      canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height)
-      URL.revokeObjectURL(objectUrl)
-      resolve(canvas.toDataURL('image/webp', 0.82))
-    }
-
-    image.onerror = () => {
-      URL.revokeObjectURL(objectUrl)
-      reject(new Error('Failed to read image file'))
-    }
-
-    image.src = objectUrl
-  })
+  const formData = new FormData()
+  formData.append('file', file)
+  const result = await request('/media', { method: 'POST', body: formData })
+  return result.url
 }
 
-// Upload video - Convert to Base64 Data URL (no server upload needed)
-export async function uploadPortfolioVideo(file) {
-  if (!file) return ''
+export function uploadPortfolioImage(file) {
+  return uploadPortfolioMedia(file)
+}
 
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-
-    reader.onload = (event) => {
-      resolve(event.target.result) // Returns data:video/... URL
-    }
-
-    reader.onerror = () => {
-      reject(new Error('Failed to read video file'))
-    }
-
-    reader.readAsDataURL(file)
-  })
+export function uploadPortfolioVideo(file) {
+  return uploadPortfolioMedia(file)
 }

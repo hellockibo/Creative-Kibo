@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Creative-Kibo
 
 React + Vite
@@ -18,17 +17,15 @@ The React Compiler is not enabled on this template because of its impact on dev 
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
 
-## Supabase setup
+## Portfolio storage
 
-1. Create a Supabase project at https://app.supabase.com and get the `URL` and `ANON KEY`.
-2. Copy `.env.example` to `.env` and set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
-3. Install dependencies and run:
+Portfolio records are stored in MongoDB and uploaded media is stored in Cloudinary.
+Configure the required values in `server/.env` using `server/.env.example`, then run:
 
 ```bash
 npm install
 npm run dev
+cd server
+npm install
+npm start
 ```
-
-4. Use the Supabase client in the app via `src/lib/supabaseClient.js`.
-
-If you want server side integration, store Supabase service role keys securely and reference them from `server/.env` or your hosting provider's secret store.

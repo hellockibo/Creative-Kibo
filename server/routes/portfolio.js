@@ -2,11 +2,12 @@ const express = require('express');
 const { 
   getProjects, 
   getProjectBySlug, 
+  uploadMedia,
   createProject, 
   updateProject, 
   deleteProject 
 } = require('../controllers/portfolioController');
-const { requireAdmin } = require('../middleware/auth');
+const { upload } = require('../utils/upload');
 
 const router = express.Router();
 
@@ -15,8 +16,9 @@ router.get('/', getProjects);
 router.get('/:slug', getProjectBySlug);
 
 // Admin protected routes
-router.post('/', requireAdmin, createProject);
-router.put('/:id', requireAdmin, updateProject);
-router.delete('/:id', requireAdmin, deleteProject);
+router.post('/media', upload.single('file'), uploadMedia);
+router.post('/', createProject);
+router.put('/:id', updateProject);
+router.delete('/:id', deleteProject);
 
 module.exports = router;
