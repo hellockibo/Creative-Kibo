@@ -1,4 +1,5 @@
-const API_URL = '/api/portfolio'
+const configuredApiUrl = import.meta.env.VITE_API_URL?.trim().replace(/\/$/, '')
+const API_URL = `${configuredApiUrl || ''}/api/portfolio`
 
 async function request(path = '', options = {}) {
   let response
@@ -8,10 +9,10 @@ async function request(path = '', options = {}) {
       ...options,
     })
   } catch (error) {
-    throw new Error('Backend is not running. Start the app with npm run dev.')
+    throw new Error(`Unable to reach the portfolio API at ${API_URL}. Check the deployed API URL.`)
   }
   const data = await response.json().catch(() => ({}))
-  if (!response.ok) throw new Error(data.error || 'Portfolio request failed')
+  if (!response.ok) throw new Error(data.error || `Portfolio request failed (${response.status})`)
   return data
 }
 

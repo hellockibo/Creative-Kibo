@@ -34,9 +34,20 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+      callback(new Error('Origin is not allowed by the portfolio API'));
+    },
     credentials: true
   })
 );
@@ -71,6 +82,9 @@ app.use('/api', (err, req, res, next) => {
   console.error('API error:', err);
 
   if (res.headersSent) return next(err);
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(413).json({ error: 'Media files must be 100 MB or smaller' });
+  }
   res.status(500).json({
     success: false,
     error: err.message || 'Internal server error'

@@ -29,3 +29,5 @@ cd server
 npm install
 npm start
 ```
+
+For a separate production frontend and API deployment, set `VITE_API_URL` in the frontend build environment to the public server URL (for example, `https://api.example.com`) and set `CLIENT_URL` on the server to the frontend URL. Multiple frontend URLs can be separated with commas.
