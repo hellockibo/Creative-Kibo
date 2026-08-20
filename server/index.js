@@ -58,8 +58,10 @@ app.use(
 // --------------------------------------------------
 
 app.use('/api/auth', authRoutes);
+app.use('/auth', authRoutes);
 
 app.use('/api/portfolio', portfolioRoutes);
+app.use('/portfolio', portfolioRoutes);
 
 
 // --------------------------------------------------
@@ -67,6 +69,13 @@ app.use('/api/portfolio', portfolioRoutes);
 // --------------------------------------------------
 
 app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date()
+  });
+});
+
+app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
     timestamp: new Date()
