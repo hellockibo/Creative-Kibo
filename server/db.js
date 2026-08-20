@@ -10,7 +10,12 @@ async function getDatabase() {
     throw new Error('MONGODB_URI is not configured in server/.env');
   }
 
-  client = new MongoClient(process.env.MONGODB_URI);
+  client = new MongoClient(process.env.MONGODB_URI, {
+    tls: true,
+    serverSelectionTimeoutMS: 10000,
+    connectTimeoutMS: 10000,
+    maxPoolSize: 5,
+  });
   await client.connect();
   database = client.db(process.env.MONGODB_DB_NAME || 'kibo');
   await database.collection('portfolio_projects').createIndex({ created_at: -1 });
