@@ -1,12 +1,7 @@
-const { ObjectId } = require('mongodb');
-const { getDatabase } = require('../db');
-const { uploadBuffer, deleteAssetUrl } = require('../cloudinary');
+const crypto = require('crypto');
+const supabase = require('../supabase');
 
-function toProject(document) {
-  if (!document) return null;
-  const { _id, ...project } = document;
-  return { ...project, id: _id.toString() };
-}
+const MEDIA_BUCKET = process.env.SUPABASE_STORAGE_BUCKET || 'kibo-portfolio';
 
 function projectPayload(body) {
   return {
@@ -18,11 +13,23 @@ function projectPayload(body) {
   };
 }
 
+function getStoragePath(url) {
+  const marker = `/storage/v1/object/public/${MEDIA_BUCKET}/`;
+  return typeof url === 'string' && url.includes(marker) ? url.split(marker)[1] : null;
+}
+
+async function removeMedia(urls) {
+  const paths = urls.map(getStoragePath).filter(Boolean);
+  if (!paths.length) return;
+  const { error } = await supabase.storage.from(MEDIA_BUCKET).remove(paths);
+  if (error) throw error;
+}
+
 async function getProjects(req, res) {
   try {
-    const database = await getDatabase();
-    const projects = await database.collection('portfolio_projects').find({}).sort({ created_at: -1 }).toArray();
-    res.json(projects.map(toProject));
+    const { data, error } = await supabase.from('portfolio_projects').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    res.json(data);
   } catch (error) {
     console.error('Failed to fetch projects:', error);
     res.status(500).json({ error: error.message || 'Failed to fetch projects' });
@@ -31,10 +38,10 @@ async function getProjects(req, res) {
 
 async function getProjectBySlug(req, res) {
   try {
-    const database = await getDatabase();
-    const project = await database.collection('portfolio_projects').findOne({ project_name: req.params.slug });
-    if (!project) return res.status(404).json({ error: 'Project not found' });
-    res.json(toProject(project));
+    const { data, error } = await supabase.from('portfolio_projects').select('*').eq('project_name', req.params.slug).maybeSingle();
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: 'Project not found' });
+    res.json(data);
   } catch (error) {
     res.status(500).json({ error: error.message || 'Failed to fetch project' });
   }
@@ -43,8 +50,15 @@ async function getProjectBySlug(req, res) {
 async function uploadMedia(req, res) {
   try {
     if (!req.file) return res.status(400).json({ error: 'A media file is required' });
-    const url = await uploadBuffer(req.file);
-    res.json({ url });
+    const extension = (req.file.originalname.split('.').pop() || 'bin').replace(/[^a-z0-9]/gi, '').toLowerCase();
+    const path = `${crypto.randomUUID()}.${extension}`;
+    const { error } = await supabase.storage.from(MEDIA_BUCKET).upload(path, req.file.buffer, {
+      contentType: req.file.mimetype,
+      upsert: false,
+    });
+    if (error) throw error;
+    const { data } = supabase.storage.from(MEDIA_BUCKET).getPublicUrl(path);
+    res.json({ url: data.publicUrl });
   } catch (error) {
     console.error('Cloudinary upload failed:', error);
     res.status(500).json({ error: error.message || 'Media upload failed' });
@@ -57,11 +71,9 @@ async function createProject(req, res) {
     if (!payload.project_name || !payload.description) {
       return res.status(400).json({ error: 'Project name and description are required' });
     }
-    const now = new Date();
-    const document = { ...payload, created_at: now, updated_at: now };
-    const database = await getDatabase();
-    const result = await database.collection('portfolio_projects').insertOne(document);
-    res.status(201).json(toProject({ ...document, _id: result.insertedId }));
+    const { data, error } = await supabase.from('portfolio_projects').insert(payload).select().single();
+    if (error) throw error;
+    res.status(201).json(data);
   } catch (error) {
     console.error('Failed to create project:', error);
     res.status(500).json({ error: error.message || 'Failed to create project' });
@@ -70,16 +82,11 @@ async function createProject(req, res) {
 
 async function updateProject(req, res) {
   try {
-    if (!ObjectId.isValid(req.params.id)) return res.status(400).json({ error: 'Invalid project id' });
     const payload = projectPayload(req.body);
-    const database = await getDatabase();
-    const result = await database.collection('portfolio_projects').findOneAndUpdate(
-      { _id: new ObjectId(req.params.id) },
-      { $set: { ...payload, updated_at: new Date() } },
-      { returnDocument: 'after' }
-    );
-    if (!result) return res.status(404).json({ error: 'Project not found' });
-    res.json(toProject(result));
+    const { data, error } = await supabase.from('portfolio_projects').update(payload).eq('id', req.params.id).select().maybeSingle();
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: 'Project not found' });
+    res.json(data);
   } catch (error) {
     res.status(500).json({ error: error.message || 'Failed to update project' });
   }
@@ -87,18 +94,12 @@ async function updateProject(req, res) {
 
 async function deleteProject(req, res) {
   try {
-    if (!ObjectId.isValid(req.params.id)) return res.status(400).json({ error: 'Invalid project id' });
-    const database = await getDatabase();
-    const collection = database.collection('portfolio_projects');
-    const project = await collection.findOne({ _id: new ObjectId(req.params.id) });
+    const { data: project, error: findError } = await supabase.from('portfolio_projects').select('images, videos').eq('id', req.params.id).maybeSingle();
+    if (findError) throw findError;
     if (!project) return res.status(404).json({ error: 'Project not found' });
-
-    const mediaUrls = [...(project.images || []), ...(project.videos || [])]
-      .filter((url) => typeof url === 'string' && url.includes('res.cloudinary.com'));
-
-    await Promise.all(mediaUrls.map((url) => deleteAssetUrl(url)));
-    const result = await collection.deleteOne({ _id: new ObjectId(req.params.id) });
-    if (!result.deletedCount) return res.status(404).json({ error: 'Project not found' });
+    await removeMedia([...(project.images || []), ...(project.videos || [])]);
+    const { error } = await supabase.from('portfolio_projects').delete().eq('id', req.params.id);
+    if (error) throw error;
     res.json({ success: true });
   } catch (error) {
     console.error('Failed to delete project and media:', error);

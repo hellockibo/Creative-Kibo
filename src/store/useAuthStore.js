@@ -26,6 +26,7 @@ export const useAuthStore = create((set) => ({
     set({ admin, isAuthenticated: !!admin, isLoading: false });
   },
   logout: () => {
+    fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
     if (typeof window !== 'undefined') {
       window.localStorage.removeItem(ADMIN_SESSION_KEY);
     }

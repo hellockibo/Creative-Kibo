@@ -1,22 +1,24 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const supabase = require('../supabase');
 
 const login = async (req, res) => {
-  const prisma = require('../prismaClient');
-  const { email, password } = req.body;
+  const { pin } = req.body;
+  const email = (process.env.ADMIN_EMAIL || 'admin@example.com').trim().toLowerCase();
 
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email and password required' });
+  if (!pin) {
+    return res.status(400).json({ error: 'Admin PIN required' });
   }
 
   try {
-    const admin = await prisma.admin.findUnique({ where: { email } });
+    const { data: admin, error } = await supabase.from('admins').select('id, email, password_hash').eq('email', email.trim().toLowerCase()).maybeSingle();
+    if (error) throw error;
 
     if (!admin) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const isMatch = await bcrypt.compare(password, admin.password_hash);
+    const isMatch = await bcrypt.compare(String(pin), admin.password_hash);
     if (!isMatch) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }

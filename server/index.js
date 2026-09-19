@@ -101,12 +101,11 @@ app.use((err, req, res, next) => {
 });
 
 
-// --------------------------------------------------
-// START SERVER
-// --------------------------------------------------
-
 if (require.main === module) {
-  app.listen(PORT, () => {
+  const http = require('http');
+  const server = http.createServer(app);
+
+  server.listen(PORT, () => {
     console.log('');
     console.log('========================================');
     console.log(`KIBO Backend running on port ${PORT}`);
