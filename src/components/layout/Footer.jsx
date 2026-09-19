@@ -72,14 +72,14 @@ export function Footer() {
           <div className="col-span-1 md:col-span-2">
             <h4 className="font-bold text-[#1a1a1a] mb-5">Follow Us</h4>
             <div className="flex gap-4">
-              <a href="https://www.instagram.com/didt_thought/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center hover:bg-[#D57B03] hover:text-white hover:border-[#D57B03] transition-all" aria-label="Instagram">
+              <a href="https://www.instagram.com/creative_kibo/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center hover:bg-[#D57B03] hover:text-white hover:border-[#D57B03] transition-all" aria-label="Instagram">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
               </a>
-              <a href="#" className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center hover:bg-[#D57B03] hover:text-white hover:border-[#D57B03] transition-all" aria-label="LinkedIn">
+              <a href="https://www.linkedin.com/in/creative-kibo-24a62242b/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center hover:bg-[#D57B03] hover:text-white hover:border-[#D57B03] transition-all" aria-label="LinkedIn">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
               </a>
               <a href="https://pin.it/10MIMem2w" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center hover:bg-[#D57B03] hover:text-white hover:border-[#D57B03] transition-all" aria-label="Pinterest">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2A10 10 0 1 0 22 12 10 10 0 0 0 12 2Z"/><path d="m9 21-1.5-6.5a4.2 4.2 0 0 1 0-2 7 7 0 0 1 1-3.5 1.5 1.5 0 0 1 2.5.5A1.5 1.5 0 0 1 10.5 12a10 10 0 0 1-1.5 3c-.5.5-.5 1 .5 1.5s2.5 1.5 3 2.5a3 3 0 0 1 .5 2"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.25A9.75 9.75 0 0 0 8.44 21.08c-.08-1.34-.01-2.95.33-4.23l1.22-5.17s-.31-.62-.31-1.54c0-1.45.84-2.54 1.89-2.54.89 0 1.32.67 1.32 1.47 0 .9-.57 2.24-.86 3.48-.25 1.04.52 1.89 1.55 1.89 1.86 0 3.29-1.96 3.29-4.79 0-2.5-1.8-4.25-4.37-4.25-2.98 0-4.73 2.24-4.73 4.55 0 .9.35 1.86.78 2.38.09.11.1.2.07.31l-.29 1.17c-.05.19-.15.23-.35.14-1.3-.61-2.11-2.5-2.11-4.03 0-3.28 2.38-6.29 6.87-6.29 3.61 0 6.42 2.57 6.42 6.01 0 3.59-2.26 6.48-5.4 6.48-1.05 0-2.03-.55-2.37-1.2l-.65 2.47c-.23.91-.86 2.06-1.28 2.76.96.29 1.96.45 3 .45A9.75 9.75 0 1 0 12 2.25Z"/></svg>
               </a>
             </div>
           </div>
